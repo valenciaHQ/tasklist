@@ -1,0 +1,28 @@
+.container {
+  display: flex;
+  width: max-content;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.container > label {
+  margin-right: 10px;
+}
+
+.container > input {
+  height: 100%;
+  padding: 2px;
+  border-radius: 7px;
+  margin-right: 8px;
+  margin-right: 10px;
+}
+
+.check {
+  display: inline-block;
+  transform: rotate(45deg);
+  height: 24px;
+  width: 12px;
+  border-bottom: 7px solid #78b13f;
+  border-right: 7px solid #78b13f;
+  cursor: pointer;
+}
