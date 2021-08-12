@@ -1,14 +1,8 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from "next";
-
-type Task = {
-  id: string;
-  title: string;
-};
-
-type Data = {
-  result: Task[];
-};
+import dbConnect from "../../dbConnect";
+import Task from "../../models/taskModel";
+import { Data } from "./types";
 
 // https://gist.github.com/jcxplorer/823878vo?
 function uuid() {
@@ -26,36 +20,43 @@ function uuid() {
   return uuid;
 }
 
-const getResult = async (quantity: number): Promise<Data> =>
-  fetch(`https://lorem-faker.vercel.app/api?quantity=${quantity}`)
-    .then((response) => response.json())
-    .then((data) =>
-      data.map((title: string) => {
-        return { id: uuid(), title };
-      })
-    );
-
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
+const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const {
-    query: { n = 3 },
+    query: { n },
     body,
     method,
   } = req;
 
+  await dbConnect();
+
   switch (method) {
     case "GET":
       try {
-        getResult(+n).then((result) => res.status(200).json(result));
+        const quantity = parseInt(n as string);
+        const tasks = await Task.find({}).limit(quantity || 3);
+        res.status(200).json({ success: true, data: tasks });
       } catch (error) {
-        res.status(500).json("An error ocurred");
+        res.status(400).json(error);
       }
       break;
     case "PUT":
-      // Update or create data in your database
       res.status(200).json({ message: `Task ${body.id} has been updated` });
+      break;
+    case "POST":
+      fetch(`https://lorem-faker.vercel.app/api?quantity=10`)
+        .then((response) => response.json())
+        .then((data) => {
+          data.map(async (title: string) => {
+            await Task.create({ id: uuid(), title });
+          });
+
+          res.status(200).json({ message: `Bulk loaded` });
+        });
       break;
     default:
       res.setHeader("Allow", ["GET", "PUT"]);
       res.status(405).end(`Method ${method} Not Allowed`);
   }
-}
+};
+
+export default handler;

@@ -13,22 +13,17 @@
   grid-gap: 20px;
 }
 
-.task {
-  display: flex;
-  flex-flow: column;
-  padding: 8px;
-  box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px,
-    rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px,
-    rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
-}
-.task > button {
-  display: flex;
-  align-self: flex-end;
-  width: 25px;
-  height: 25px;
+.main > p {
+  font-size: xx-large;
+  text-align: center;
 }
 
-.task > .completeTaskBtn {
-  width: auto;
-  height: auto;
+.main > p > a {
+  color: palevioletred;
+  cursor: pointer;
+  transition: 0.5s linear;
+}
+
+.main > p > a:hover {
+  color: red;
 }
