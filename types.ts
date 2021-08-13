@@ -13,3 +13,7 @@ export type TaskType = {
   _id: string;
   title: string;
 };
+
+export interface CallbackOneParam<T1, T2 = void> {
+  (): T2;
+}

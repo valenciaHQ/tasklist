@@ -27,3 +27,9 @@
 .main > p > a:hover {
   color: red;
 }
+
+.loading {
+  font-size: xxx-large;
+  color: goldenrod;
+  text-align: center;
+}

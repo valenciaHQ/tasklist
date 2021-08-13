@@ -1,4 +1,3 @@
-import { InferGetStaticPropsType } from "next";
 import Head from "next/head";
 import { useEffect, useState } from "react";
 import { server } from "../config";
@@ -20,22 +19,37 @@ const customStyles = {
 };
 
 Modal.setAppElement("#__next");
+let mainContent: JSX.Element;
 
-function Home({ tasks }: InferGetStaticPropsType<typeof getStaticProps>) {
-  const [currentTasks, setCurrentTasks] = useState(tasks);
-  const [taskQuantity, setTaskQuantity] = useState(tasks.length);
+function Home() {
+  const [currentTasks, setCurrentTasks] = useState<TaskType[]>([]);
+  const [taskQuantity, setTaskQuantity] = useState(0);
   const [selectedTask, setSelectedTask] = useState<TaskType | undefined>();
+  const [loading, setLoading] = useState(false);
   const [modal, setModal] = useState(false);
 
-  console.log(tasks);
+  const fetchTasks = async (quantity: number) => {
+    fetch(`${server}/api/tasks?n=${quantity}`)
+      .then((res) => res.json())
+      .then((result) => {
+        setCurrentTasks(result.data);
+      });
+  };
 
   useEffect(() => {
-    fetch(`${server}/api/tasks?n=${taskQuantity}`)
-      .then((res) => res.json())
-      .then((result) => setCurrentTasks(result.data));
+    setLoading(true);
+    fetchTasks(parseInt(process.env.DEFAULT_TASK_QUANTITY!));
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    setLoading(true);
+    fetchTasks(taskQuantity);
+    setLoading(false);
   }, [taskQuantity]);
 
   const loadBulk = () => {
+    setLoading(true);
     fetch(`${server}/api/tasks`, {
       method: "POST",
     })
@@ -63,6 +77,34 @@ function Home({ tasks }: InferGetStaticPropsType<typeof getStaticProps>) {
       });
   };
 
+  if (loading) {
+    mainContent = <div className={styles.loading}>Loading...</div>;
+  }
+
+  if (currentTasks?.length > 0) {
+    mainContent = (
+      <>
+        {currentTasks.map((task) => (
+          <Task
+            key={task._id}
+            data={task}
+            setModal={setModal}
+            setSelectedTask={setSelectedTask}
+          />
+        ))}
+      </>
+    );
+  }
+
+  if (!loading && currentTasks?.length === 0) {
+    mainContent = (
+      <p>
+        You dont have any task, press <a onClick={loadBulk}>Here</a> to load
+        some
+      </p>
+    );
+  }
+
   return (
     <div className={styles.container}>
       <Head>
@@ -73,7 +115,8 @@ function Home({ tasks }: InferGetStaticPropsType<typeof getStaticProps>) {
 
       <h1>Task application</h1>
       <h4>
-        You can setup how many task do you want to be rendered, default is 3.
+        {`You can setup how many task do you want to be rendered, default is
+        ${process.env.defaultTaskQuantity}.`}
       </h4>
       <Input
         currentQuantity={taskQuantity}
@@ -85,23 +128,7 @@ function Home({ tasks }: InferGetStaticPropsType<typeof getStaticProps>) {
             currentTasks.length > 1 ? "tasks" : "task"
           }`}
       </div>
-      <main className={styles.main}>
-        {currentTasks?.length > 0 ? (
-          currentTasks.map((task) => (
-            <Task
-              key={task._id}
-              data={task}
-              setModal={setModal}
-              setSelectedTask={setSelectedTask}
-            />
-          ))
-        ) : (
-          <p>
-            You dont have any task, press <a onClick={loadBulk}>Here</a> to load
-            some
-          </p>
-        )}
-      </main>
+      <main className={styles.main}>{mainContent}</main>
       <Modal isOpen={modal} contentLabel="Example Modal" style={customStyles}>
         <div className={styles.task}>
           <button onClick={() => setModal(false)}>X</button>
@@ -115,16 +142,5 @@ function Home({ tasks }: InferGetStaticPropsType<typeof getStaticProps>) {
     </div>
   );
 }
-
-export const getStaticProps = async () => {
-  const res = await fetch(`${server}/api/tasks?n=${3}`);
-  const result = await res.json();
-  const tasks: TaskType[] = result.data;
-  return {
-    props: {
-      tasks,
-    },
-  };
-};
 
 export default Home;

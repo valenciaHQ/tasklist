@@ -1,5 +1,5 @@
-import { FC, KeyboardEventHandler, useState } from "react";
-import { IInput } from "../types";
+import { FC, memo, useState } from "react";
+import { IInput } from "../../types";
 import styles from "./Input.module.css";
 
 const Input: FC<IInput> = ({ currentQuantity, onTaskNumberChange }) => {
@@ -28,4 +28,4 @@ const Input: FC<IInput> = ({ currentQuantity, onTaskNumberChange }) => {
   );
 };
 
-export default Input;
+export default memo(Input);
